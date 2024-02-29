@@ -6,7 +6,8 @@ reg sel;
 reg [7:0]A,B;
 reg clk,reset,Tvalid,Tready,Tlast;
 wire [7:0]out;
-Mux_2_1 sample(sel,A,B,clk,reset,Tvalid,Tready,Tlast,out);
+wire [4:0]frame_cnt;
+Mux_2_1 sample(sel,A,B,clk,reset,Tvalid,Tready,Tlast,out,frame_cnt);
 
  /*task set_inputs(
         input [7:0] d0, d1,
@@ -19,29 +20,24 @@ Mux_2_1 sample(sel,A,B,clk,reset,Tvalid,Tready,Tlast,out);
             sel <= s;
         end
     endtask*/
-
 initial begin
-clk <=0;
-sel <=0;
-reset <= 0;
-Tvalid <=0;
-Tready <=0;
-Tlast <=0;
-end
-
-initial begin
+    clk =0;
     forever #5 clk = ~clk;
     end
     
-/*initial begin
-    forever #50 reset = ~reset;
-    end*/
+initial begin
+     reset = 0;
+     #50 reset = 1;
+     #10 reset = 0;
+    end
   
 initial begin
+    Tlast =0;
     forever #150 Tlast = ~Tlast;
     end
 
 initial begin
+    sel =0;
     forever #10 sel = ~sel;
     end
     
@@ -57,6 +53,5 @@ initial begin
    #100   A = 8'h12; B = 8'h56 ; Tvalid =1 ; Tready =1 ;
    #100   A = 8'h90; B = 8'h15 ; Tvalid =1 ; Tready =1 ;
       
-
 end
 endmodule
