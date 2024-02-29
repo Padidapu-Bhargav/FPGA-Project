@@ -28,10 +28,7 @@ initial begin
   
 initial begin
     Tlast =0;
-    #85 Tlast =1;
-    #5 Tlast =0;
-    #95 Tlast =1;
-    #5 Tlast =0;
+    forever #50 Tlast = ~Tlast;
     end
     
 initial begin
