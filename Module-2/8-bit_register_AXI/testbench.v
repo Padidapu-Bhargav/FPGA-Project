@@ -6,8 +6,9 @@ reg [7:0] in_data;
 reg clk,reset;
 reg T_valid_in,T_ready,Tlast;
 wire [7:0] out_data;
+wire [4:0] frame_cnt;
 
-AXI_8_bit_register sample(in_data,clk,reset,T_valid_in,T_ready,Tlast,out_data);
+AXI_8_bit_register sample(in_data,clk,reset,T_valid_in,T_ready,Tlast,out_data,frame_cnt);
 
 initial begin
 clk <=0;
@@ -26,7 +27,11 @@ initial begin
     end
   
 initial begin
-    forever #150 Tlast = ~Tlast;
+    Tlast =0;
+    #85 Tlast =1;
+    #5 Tlast =0;
+    #95 Tlast =1;
+    #5 Tlast =0;
     end
     
 initial begin
