@@ -29,7 +29,7 @@ always @(posedge clk , posedge reset) begin
     end
 end
 
-always@(posedge clk, posedge reset) begin
+always@(Tlast) begin
     if(Tlast) cnt <= cnt + 5'b1;
     else cnt <= cnt;
 end
