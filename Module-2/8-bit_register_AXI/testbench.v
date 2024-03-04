@@ -2,74 +2,59 @@
 
 
 module TB();
-reg [7:0] in_data;
-reg clk,reset;
-reg T_valid_in,T_ready,Tlast;
-wire [7:0] out_data;
-wire [4:0] frame_cnt;
+reg clk,rst;
+    
+//master
+reg [7:0]data_in;
+reg m_valid;
+wire m_ready;
+wire m_last;
+    
+//slave
+wire [7:0]s_data;
+wire s_valid;
+reg s_ready;
+wire s_last;
 
-AXI_8_bit_register sample(in_data,clk,reset,T_valid_in,T_ready,Tlast,out_data,frame_cnt);
+
+AXI_8_bit_register sample(.clk(clk), .rst(rst),
+                          .data_in(data_in),
+                          .m_valid(m_valid),
+                          .m_ready(m_ready),
+                          .m_last(m_last),
+                          .s_data(s_data),
+                          .s_valid(s_valid),
+                          .s_ready(s_ready),
+                          .s_last(s_last)       );
+
 
 initial begin
-clk <=0;
-reset <= 0;
-T_valid_in <=0;
-T_ready <=0;
-Tlast <=0;
+    clk = 0;
+    forever #10 clk = ~clk;
 end
 
 initial begin
-    forever #5 clk = ~clk;
-    end
-    
-initial begin
-    forever #50 reset = ~reset;
-    end
-  
-initial begin
-    Tlast =0;
-    forever #50 Tlast = ~Tlast;
-    end
-    
-initial begin
- in_data = 8'h12;
-    T_valid_in = 1'b1;
-    T_ready = 1'b1;
-    
- #100in_data = 8'h22;
-    T_valid_in = 1'b1;
-    T_ready = 1'b1;
-    
- #100in_data = 8'h33;
-    T_valid_in = 1'b0;
-    T_ready = 1'b0;
-    
- #100in_data = 8'h44;
-    T_valid_in = 1'b1;
-    T_ready = 1'b1;
-    
- #100in_data = 8'h55;
-    T_valid_in = 1'b0;
-    T_ready = 1'b1;
-    
- #100in_data = 8'h66;
-    T_valid_in = 1'b1;
-    T_ready = 1'b0;
-    
- #100in_data = 8'h77;
-    T_valid_in = 1'b1;
-    T_ready = 1'b1; 
-    
- #100in_data = 8'h88;
-    T_valid_in = 1'b1;
-    T_ready = 1'b1; 
-    
- #100in_data = 8'hAA;
-    T_valid_in = 1'b1;
-    T_ready = 1'b1; 
-    
-  #100in_data = 8'hBB;
-    T_valid_in = 1'b1;
-    T_ready = 1'b1; 
+    rst = 0;
+    #10 rst = 1;
+    #10 rst = 0;
 end
+
+initial begin
+    data_in =0;
+    repeat(100) #50 data_in = $random;
+end   
+
+initial begin
+    m_valid=0; s_ready=0;
+    #110 m_valid=1; s_ready=1;
+    #100 m_valid=1; s_ready=0;
+    #100 m_valid=0; s_ready=1;
+    #100 m_valid=1; s_ready=0;
+    #100 m_valid=1; s_ready=1;
+    #100 m_valid=0; s_ready=1;
+    #100 m_valid=1; s_ready=0;
+    #100 m_valid=1; s_ready=1;
+    #100 m_valid=0; s_ready=1;
+end
+
 endmodule
