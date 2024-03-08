@@ -8,7 +8,7 @@ reg clk,rst;
 reg [7:0]data_in;
 reg m_valid;
 wire m_ready;
-wire m_last;
+reg m_last;
     
 //slave
 wire [7:0]s_data;
@@ -17,7 +17,7 @@ reg s_ready;
 wire s_last;
 
 
-AXI_8_bit_register sample(.clk(clk), .rst(rst),
+AXI_8_bit sample(.clk(clk), .rst(rst),
                           .data_in(data_in),
                           .m_valid(m_valid),
                           .m_ready(m_ready),
@@ -38,6 +38,17 @@ initial begin
     #10 rst = 1;
     #10 rst = 0;
 end
+
+initial begin
+    m_last =0;
+    #190 m_last = 1 ;
+    #20 m_last =0;
+    #380 m_last =1;
+    #20 m_last = 0;
+    #280 m_last =1;
+    #20 m_last = 0;
+end
+
 
 initial begin
     data_in =0;
