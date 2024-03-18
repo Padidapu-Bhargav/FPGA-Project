@@ -3,55 +3,50 @@
 module AXI_8_bit(
     input clk,rst,
     
-    //master
-    input [7:0]data_in,
-    input m_valid,
-    output reg m_ready,
-    input  m_last,
-    
     //slave
-    output reg [7:0]s_data,
-    output reg s_valid,
-    input s_ready,
-    output reg s_last
+    input [7:0]s_data,
+    input s_valid,
+    output reg s_ready,
+    input  s_last,
+    
+    
+    //master
+    output  reg [7:0]m_data,
+    output reg m_valid,
+    input m_ready,
+    output reg m_last
      );
-reg [7:0]hold_data;
+reg [7:0]data;
+reg valid;
+reg ready;
+reg last;
 
 
 always@(posedge clk) begin
-    s_valid <= m_valid;
-    m_ready <= s_ready;
-    s_last <= m_last;
-end
-
-
-always@(posedge clk) begin
-    if(rst) begin
-        hold_data <= 8'h00;
-    end
-    else begin
-        if(m_valid && s_ready) begin
-            hold_data <= data_in;
-        end
-        else begin
-             hold_data <= hold_data;
-        end 
-    end
+    last <= s_last;
 end
 
 always@(posedge clk) begin
-    if(rst) begin
-        s_data <= 8'h00;
+    if(rst)begin
+        valid <= 0;
+        data <= 8'b0;
     end
-    else begin
-        if(s_valid && m_ready) begin
-            s_data <= hold_data;
-        end
-        else begin
-             s_data <= s_data;
-        end 
-    end
+    else if(s_valid && m_ready) begin
+        data <= s_data;
+        valid <= 1'b1;
+     end
+     else begin
+        valid <= 1'b0;
+        data <= 8'b0;
+     end
+     
 end
 
+always@(posedge clk) begin
+    m_data <= data;
+    m_valid <= valid;
+     s_ready <= rst ? 0 : m_ready;
+    m_last <= last;
+end
 
 endmodule
