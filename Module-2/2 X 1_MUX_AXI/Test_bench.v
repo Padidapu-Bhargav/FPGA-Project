@@ -47,71 +47,78 @@ initial begin
 end
 
 initial begin
-    rst = 0;
-    #20 rst = 1;
-    #30 rst = 0;
+    rst = 1'b0;
+    @(posedge clk) rst = 1'b1;
+    @(posedge clk) rst = 1'b0;
 end
 
 initial begin
-    s_last_1 = 1'b0;
-    
-    s_last_2 = 1'b0;
-end
-
-initial begin
-     s_data_1 = 8'h23 ;// $random;
-end 
-
-initial begin
-    s_data_2 = 8'h45;//$random;
-end 
-
-initial begin
-    m_ready =1;
-  //  forever #50 m_ready = ~m_ready;
-end
-
-initial begin
-    s_valid_1=0; //m_ready=0;
-     forever #120 s_valid_1 = ~s_valid_1;
-end
-
-
-
-initial begin
-    s_valid_2=0;// m_ready=0;
-     forever #140 s_valid_2 = ~s_valid_2;
-
-end
-
-
-initial begin
-    sel =0;
-    forever #100 sel = ~sel;
+    repeat(25) @(posedge clk) sel = 1'b0;
+    repeat(20) @(posedge clk) sel = 1'b1;
 end  
 
-initial
-begin
-
-s_last_1  = 0;
-#230 s_last_1 = 1;
-#10 s_last_1 =0;
-#230 s_last_1 = 1;
-#10 s_last_1= 0;
-#210 s_last_1 = 1;
-#10 s_last_1 = 0;
-#190 s_last_1 =1;
-#10 s_last_1 = 0;       
-end
- 
- 
+// Data when the sel =0
 initial begin
-s_last_2  = 0;
-#190 s_last_2 = 1;
-#10 s_last_2 = 0;
-#350 s_last_2 = 1;
-#10 s_last_2 =0;
-#230 s_last_2 =1;
-#10 s_last_2 = 0;        
+     s_data_1 = 8'h00 ;
+     forever begin
+         @(posedge clk)
+         @(posedge clk) s_data_1 = $random;
+     end
+end 
+
+// Data when the sel =1
+initial begin
+     s_data_2 = 8'h00 ;
+     forever begin
+         @(posedge clk)
+         @(posedge clk) s_data_2 = $random;
+     end
+end 
+
+initial begin
+    @(posedge clk) m_ready=1'b0;
+    @(posedge clk) m_ready=1'b1;
+    repeat(2)@(posedge clk) m_ready = 1'b0; 
+    repeat(5)@(posedge clk) m_ready = 1'b1;
+    repeat(4)@(posedge clk) m_ready = 1'b0;
+    repeat(4)@(posedge clk) m_ready = 1'b1;
+    repeat(4)@(posedge clk) m_ready = 1'b0; 
+    repeat(8)@(posedge clk) m_ready = 1'b1;
+    repeat(4)@(posedge clk) m_ready = 1'b0;
+    repeat(4)@(posedge clk) m_ready = 1'b1;
+    repeat(4)@(posedge clk) m_ready = 1'b0;
+    repeat(4)@(posedge clk) m_ready = 1'b1;
 end
+
+initial begin
+    repeat(4)@(posedge clk) s_valid_1=1'b1; 
+    repeat(5)@(posedge clk) s_valid_1=1'b1; 
+    repeat(5)@(posedge clk) s_valid_1=1'b0;
+    repeat(4)@(posedge clk) s_valid_1=1'b0; 
+    repeat(4)@(posedge clk) s_valid_1=1'b1;
+end
+
+initial begin
+    repeat(4)@(posedge clk) s_valid_2=1'b0; 
+    repeat(5)@(posedge clk) s_valid_2=1'b1; 
+    repeat(20)@(posedge clk) s_valid_2=1'b0;
+    repeat(5)@(posedge clk) s_valid_2=1'b1;
+    repeat(8)@(posedge clk) s_valid_2=1'b0;
+    repeat(5)@(posedge clk) s_valid_2=1'b1;
+
+end
+
+initial begin
+    repeat(23)@(posedge clk) s_last_1 = 1'b0; 
+    @(posedge clk) s_last_1 = 1'b1;
+    @(posedge clk) s_last_1 = 1'b0;   
+end
+
+initial begin
+    repeat(47)@(posedge clk) s_last_2 = 1'b0; 
+    @(posedge clk) s_last_2 = 1'b1;
+    @(posedge clk) s_last_2 = 1'b0; 
+    
+end
+
 endmodule
