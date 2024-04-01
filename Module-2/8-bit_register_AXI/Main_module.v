@@ -17,6 +17,7 @@ module AXI_8_bit(
     input m_ready,
     output  reg m_last
      );
+     
 reg [7:0]data;
 reg valid;
 reg ready;
@@ -26,7 +27,7 @@ reg last;
 
 always@(posedge clk) begin
     if(rst)begin
-        valid <= 0;
+        valid <= 1'b0;
         data <= 8'b0;
         last <= 1'b0;
     end
@@ -37,7 +38,6 @@ always@(posedge clk) begin
      end
      else begin
         valid <= 1'b0;
-        data <= 8'b0;
         last <= 1'b0;
      end
      
@@ -47,19 +47,20 @@ integer cnt;
 
 always@(posedge clk) begin
     if(rst) begin
-        s_ready <= 1'b0;
-       // cnt <= 1'b0;
+        ready <= 1'b0;
+        cnt <= 1'b0;
     end
     else begin
-       // if(cnt < 5)begin
+        if(cnt <= 2)begin
             s_ready <= 1'b1;
-         //   cnt <= cnt + 1'b1;
+            cnt <= cnt + 1'b1; 
         end
-      /*  else begin
+        else if( cnt <= 4 ) begin
             s_ready <= 1'b0;
-            cnt <= 1'b0;
-        end    
-    end*/
+            cnt <= cnt + 1'b1;
+        end 
+        else cnt <= 1'b0;
+    end
 end
 
 always@(posedge clk) begin
