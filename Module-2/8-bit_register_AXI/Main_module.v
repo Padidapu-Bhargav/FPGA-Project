@@ -12,10 +12,10 @@ module AXI_8_bit(
     
     
     //master
-    output   [7:0]m_data,
-    output   m_valid,
+    output reg  [7:0]m_data,
+    output reg  m_valid,
     input m_ready,
-    output   m_last
+    output reg  m_last
      );
      
 reg [7:0]data;
@@ -23,7 +23,7 @@ reg valid;
 reg ready;
 reg last;
 
-
+integer cnt;
 
 always@(posedge clk) begin
     if(rst)begin
@@ -31,41 +31,42 @@ always@(posedge clk) begin
         data <= 8'b0;
         last <= 1'b0;
     end
-    else if(s_valid && s_ready) begin
-        data <= s_data;
-        valid <= 1'b1;
-        last <= s_last;
-     end
-     else begin
-        valid <= 1'b0;
-        last <= 1'b0;
-     end
-     
+    else begin
+         if(s_valid && ready) begin
+            data <= s_data;
+            valid <= 1'b1;
+            last <= s_last;
+         end
+         else begin
+            valid <= 1'b0;
+            last <= 1'b0;
+         end
+    end  
 end
 
-integer cnt;
+
 
 always@(posedge clk) begin
     if(rst) begin
-        s_ready <= 1'b0;
+        ready <= 1'b0;
         cnt <= 1'b0;
     end
     else begin
         if(cnt <= 2)begin
-            s_ready <= 1'b1;
+            ready <= 1'b1;
             cnt <= cnt + 1'b1; 
         end
         else if( cnt <= 4 ) begin
-            s_ready <= 1'b0;
+            ready <= 1'b0;
             cnt <= cnt + 1'b1;
         end 
         else cnt <= 1'b0;
     end
 end
-
-assign m_data = data;
-assign m_valid = valid;
-assign m_last = last;
-
-
+always@(posedge clk) begin
+    m_data = data;
+    m_valid = valid;
+    m_last = last;
+    s_ready = ready;
+end
 endmodule
