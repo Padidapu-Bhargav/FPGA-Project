@@ -34,7 +34,7 @@ always@(posedge clk) begin
     else begin
          if(s_valid && ready) begin
             data <= s_data;
-            valid <= 1'b1;
+            valid <= s_valid;
             last <= s_last;
          end
          else begin
