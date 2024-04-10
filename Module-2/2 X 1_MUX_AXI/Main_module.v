@@ -34,10 +34,11 @@ always@(posedge clk) begin
         ready <= 1'b0;
         cnt <= 1'b0;
     end
+    //else ready <= 1'b1 ;
     else begin
         if(cnt <= 3)begin
             ready <= 1'b1;
-            cnt <= cnt + 1'b1; 
+           cnt <= cnt + 1'b1; 
         end
         else if( cnt <= 5 ) begin
             ready <= 1'b0;
