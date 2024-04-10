@@ -90,11 +90,14 @@ end
 
 initial begin
     repeat(4)@(posedge clk) s_valid_1=1'b1; 
-    repeat(5)@(posedge clk) s_valid_1=1'b1; 
-    repeat(5)@(posedge clk) s_valid_1=1'b0;
+    repeat(5)@(posedge clk) s_valid_1=1'b0; 
+    repeat(5)@(posedge clk) s_valid_1=1'b1;
     repeat(4)@(posedge clk) s_valid_1=1'b0; 
     repeat(4)@(posedge clk) s_valid_1=1'b1;
 end
+/*initial begin
+    s_valid_1 = 1'b1;
+end*/
 
 initial begin
     repeat(4)@(posedge clk) s_valid_2=1'b0; 
@@ -105,6 +108,10 @@ initial begin
     repeat(5)@(posedge clk) s_valid_2=1'b1;
 
 end
+
+/*initial begin
+    s_valid_2 = 1'b1;
+end*/
 
 initial begin
     repeat(23)@(posedge clk) s_last_1 = 1'b0; 
