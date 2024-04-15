@@ -74,16 +74,17 @@ initial begin
 end 
 
 initial begin
-    @(posedge clk) m_ready=1'b0;
+    //@(posedge clk) m_ready=1'b0;
     @(posedge clk) m_ready=1'b1;
-    repeat(2)@(posedge clk) m_ready = 1'b0; 
     repeat(5)@(posedge clk) m_ready = 1'b1;
-    repeat(4)@(posedge clk) m_ready = 1'b0;
-    repeat(4)@(posedge clk) m_ready = 1'b1;
-    repeat(4)@(posedge clk) m_ready = 1'b0; 
+    repeat(2)@(posedge clk) m_ready = 1'b0;
+    repeat(5)@(posedge clk) m_ready = 1'b1;
+    repeat(3)@(posedge clk) m_ready = 1'b0;
+    repeat(8)@(posedge clk) m_ready = 1'b1;
+    repeat(2)@(posedge clk) m_ready = 1'b0; 
     repeat(8)@(posedge clk) m_ready = 1'b1;
     repeat(4)@(posedge clk) m_ready = 1'b0;
-    repeat(4)@(posedge clk) m_ready = 1'b1;
+    repeat(6)@(posedge clk) m_ready = 1'b1;
     repeat(4)@(posedge clk) m_ready = 1'b0;
     repeat(4)@(posedge clk) m_ready = 1'b1;
 end
@@ -95,6 +96,7 @@ initial begin
     repeat(4)@(posedge clk) s_valid_1=1'b0; 
     repeat(4)@(posedge clk) s_valid_1=1'b1;
 end
+
 /*initial begin
     s_valid_1 = 1'b1;
 end*/
