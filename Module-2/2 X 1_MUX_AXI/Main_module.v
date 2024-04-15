@@ -24,33 +24,16 @@ module Mux_2_1(
     
 reg [7:0]data;
 reg last;
-reg ready;
+wire ready;
 reg valid;
 
 integer cnt;
 
-always@(posedge clk) begin
-    if(reset) begin
-        ready <= 1'b0;
-        cnt <= 1'b0;
-    end
-    //else ready <= 1'b1 ;
-    else begin
-        if(cnt <= 3)begin
-            ready <= 1'b1;
-           cnt <= cnt + 1'b1; 
-        end
-        else if( cnt <= 5 ) begin
-            ready <= 1'b0;
-            cnt <= cnt + 1'b1;
-        end 
-        else cnt <= 1'b0;
-    end
-end
+assign ready = m_ready;
 
 always @(posedge clk) begin
     if (reset) begin
-       data <= 8'h00;
+       m_data <= 8'h00;
        valid <= 1'b0;
        last <= 1'b0;
     end
@@ -59,33 +42,31 @@ always @(posedge clk) begin
         // if sel = 0, s_data_2 is the input
         if (sel) begin
             if (s_valid_2 && ready) begin
-                data <= s_data_2;
-                valid <= s_valid_2;
-                last  <= s_last_2;
+                m_data <= s_data_2;
+                m_valid <= s_valid_2;
+                m_last  <= s_last_2;
             end
             else begin
-                valid <= 1'b0;
-                last <= 1'b0;
+                m_valid <= 1'b0;
+                m_last <= 1'b0;
             end
         end
         else begin
             if (s_valid_1 && ready) begin
-                data <= s_data_1;
-                valid <= s_valid_1;
-                last <= s_last_1;
+                m_data <= s_data_1;
+                m_valid <= s_valid_1;
+                m_last <= s_last_1;
             end
             else begin
-                valid<= 1'b0;
-                last <= 1'b0;
+                m_valid<= 1'b0;
+                m_last <= 1'b0;
             end
         end  
     end
 end
 
+
 always @(posedge clk) begin
-    m_data <= data;
-    m_valid <= valid;
-    m_last <= last;
     s_ready_1 <= sel ? 0 : ready ;
     s_ready_2 <= sel ? ready : 0 ;
 end
