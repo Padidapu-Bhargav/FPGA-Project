@@ -4,7 +4,7 @@
 // MAC operation ( (a + b)*(c + d) )
 ///////////////
 
-module MAC_add#(parameter Data_width=16)(
+module MAC_add#(parameter Data_width=8)(
     // slave data A
     input [Data_width-1:0]a_data,
        
