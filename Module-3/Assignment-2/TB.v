@@ -11,8 +11,8 @@ module packet_data_tb;
   reg  clk=1;
   reg  rst=1;
   reg [Data_width-1   :0] s_data='d0;
-  reg  s_valid=0;
-  reg  s_last=0;
+  reg  s_valid;
+  reg  s_last;
   wire  s_ready;
   wire [Data_width-1   :0] m_data;
   wire  m_valid;
@@ -20,8 +20,8 @@ module packet_data_tb;
   reg  m_ready=0;
 //  logic full,empty;
 
-  reg [Data_width-1:0] len=16;
-  reg [Data_width-1:0] k=4;
+  reg [Data_width-1:0] len=8;
+  reg [Data_width-1:0] k=4 ;
   //reg [Data_width+Data_width-1:0] packet_config={k,len};
 
   packet_data DUT (
@@ -46,10 +46,10 @@ end
 
 initial   begin
     rst = 1;
-    #20 rst = 0;
+    #40 rst = 0;
 end
 
-integer i;
+/*integer i;
 always@(posedge clk) begin
    i=0;
    s_last =0;
@@ -61,16 +61,36 @@ always@(posedge clk) begin
        i = i+1;
        s_last = 1'b0;
    end
-end
+end*/
 initial begin
     s_data = 0;
-    repeat(2)@(posedge clk);
-    forever @(posedge clk) s_data = s_data +2;
+    s_valid =0;
+    repeat(2)@(posedge clk) s_valid =1;;
+    forever begin
+        // 1st frame
+        repeat(len)@(posedge clk)s_data = s_data +2;  
+     end
+    @(posedge clk)s_data =0;
+    repeat(k)@(posedge clk);
+    s_valid =0;
 end
 
 initial begin
-s_valid = 1;
-m_ready =1;
+    s_last =0; 
+    repeat(2)@(posedge clk)s_last = 0; 
+    forever begin
+        repeat(len-1) @(posedge clk) s_last =0;
+        @(posedge clk) s_last = 1;
+        @(negedge clk) s_last =0;
+    end
+end
+
+integer j,i;
+initial begin
+    m_ready = 1;
+    repeat(45)@(posedge clk) m_ready =1;
+    //m_ready =0;
+    
 end
 endmodule
 
