@@ -9,12 +9,11 @@ module Pattern_detect_TB;
     reg clk;
     reg [input_1_width:0] A;
     reg [input_2_width:0] B;
-    reg [output_width:0] pd_pattern1;
-    wire  [output_width:0] C;
-    wire ones_o;
+    wire [output_width:0] C;
+    wire pattern_detection;
     
-    Pattern_detect DUT(.clk(clk), .A(A), .B(B), .pd_pattern1(pd_pattern1),
-                       .C(C), .ones_o(ones_o));
+    Pattern_detect DUT(.clk(clk), .A(A), .B(B),
+                       .C(C), .pattern_detection(pattern_detection));
                        
 initial begin
     clk = 0;
@@ -24,7 +23,9 @@ end
 initial begin
     A = 24'd12;
     B = 17'd2;
-    pd_pattern1 =  43'd24;;
+    repeat(15)@(posedge clk);
+    A = 24'd12;
+    B = 17'd3;
 end
 
 endmodule
