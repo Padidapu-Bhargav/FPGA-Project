@@ -3,7 +3,7 @@
 module packet_data_tb;
 
   // Parameters
-  parameter  Data_width = 8;
+  parameter  Data_width = 16;
   parameter   Depth = 10;
 
 
@@ -20,8 +20,8 @@ module packet_data_tb;
   reg  m_ready=0;
 //  logic full,empty;
 
-  reg [Data_width-1:0] len=8;
-  reg [Data_width-1:0] k=4 ;
+  reg [Data_width-1:0] len=10;
+  reg [Data_width-1:0] k=4;
   //reg [Data_width+Data_width-1:0] packet_config={k,len};
 
   packet_data DUT (
@@ -36,7 +36,6 @@ module packet_data_tb;
               .m_last(m_last),
               .m_ready(m_ready),
               .k(k),.len(len)
-              //.packet_config(packet_config)
             );
  
   initial begin
@@ -49,23 +48,12 @@ initial   begin
     #40 rst = 0;
 end
 
-/*integer i;
-always@(posedge clk) begin
-   i=0;
-   s_last =0;
-   if( i==10) begin
-       s_last =1'b1;
-       i=0;
-   end
-   else begin
-       i = i+1;
-       s_last = 1'b0;
-   end
-end*/
+
 initial begin
     s_data = 0;
     s_valid =0;
-    repeat(2)@(posedge clk) s_valid =1;;
+    repeat(2)@(posedge clk)
+     s_valid =1;;
     forever begin
         // 1st frame
         repeat(len)@(posedge clk)s_data = s_data +2;  
@@ -85,14 +73,9 @@ initial begin
     end
 end
 
-integer j,i;
 initial begin
     m_ready = 1;
     repeat(45)@(posedge clk) m_ready =1;
-    //m_ready =0;
     
 end
 endmodule
-
-
-
