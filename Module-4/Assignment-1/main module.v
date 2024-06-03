@@ -51,8 +51,6 @@ reg  [(F_int+F_Frac)-1:0]B_temp1;
 reg [F_int-1:0]B_temp_I; // integer part of temporary B
 reg [F_Frac-1:0]B_temp_F; // fractional part of temporary B
 
-//overflow and underflow conditions
-//reg signed [ (WIO+WFO)-1 :0]out;
 
 reg overflow=0;
 reg overflow1=0;
