@@ -43,24 +43,20 @@ reg [WF1-1:0]A_F;  // fractional part of A
 reg [WI2-1:0]B_I;  // integer part of B
 reg [WF2-1:0]B_F;  // fractional part of B
 reg signed [(F_int+F_Frac)-1:0]A_temp; 
-reg  [(F_int+F_Frac)-1:0]A_temp1; 
 reg [F_int-1:0]A_temp_I; // integer part of temporary A
 reg [F_Frac-1:0]A_temp_F; // fractional part of temporary A
 reg signed [(F_int+F_Frac)-1:0]B_temp;
-reg  [(F_int+F_Frac)-1:0]B_temp1;
 reg [F_int-1:0]B_temp_I; // integer part of temporary B
 reg [F_Frac-1:0]B_temp_F; // fractional part of temporary B
 
 
 reg overflow=0;
-reg overflow1=0;
 reg underflow=0;
 
 ///////////////////////////
 //integer and fractional parts are separated and stored
 ///////////////////////////    
 always @(*) begin
- // A_I = {A[(WI1+WF1-1):WF1],{WF1{1'd0}}};
   A_I = A[(WI1+WF1-1):WF1];
   A_F = A[(WF1-1):0];
   B_I = B[(WI2+WF2-1):WF2];
@@ -99,9 +95,6 @@ end
 
 wire signed [F_int-1:0]OFvalue= {1'b0,{(F_int-1){1'b1}} };
 wire signed [F_int-1:0]UFvalue={1'b1,{(F_int-1){1'b0}}};
-
-wire [WIO+WFO-1:0]out;
-assign out = A_temp1+B_temp1;
 
 
 always@(posedge clk) begin
