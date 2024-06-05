@@ -48,9 +48,9 @@ reg [F_Frac-1:0]A_temp_F; // fractional part of temporary A
 reg signed [(F_int+F_Frac)-1:0]B_temp;
 reg [F_int-1:0]B_temp_I; // integer part of temporary B
 reg [F_Frac-1:0]B_temp_F; // fractional part of temporary B
-reg [F_int+F_Frac:0]sum;
-reg [F_int:0]sum_I;
-reg [F_Frac-1:0]sum_F;
+  reg [F_int+F_Frac:0]sum; // temporary sum
+  reg [F_int:0]sum_I; // integer part of temporary sum
+  reg [F_Frac-1:0]sum_F; // fractional part of temporary sum
 
 
 
@@ -61,7 +61,6 @@ reg underflow=0;
 //integer and fractional parts are separated and stored
 ///////////////////////////    
 always @(*) begin
- // A_I = {A[(WI1+WF1-1):WF1],{WF1{1'd0}}};
   A_I = A[(WI1+WF1-1):WF1];
   A_F = A[(WF1-1):0];
   B_I = B[(WI2+WF2-1):WF2];
@@ -96,8 +95,6 @@ always @* begin
     B_temp = {B_temp_I,B_temp_F};
 end
 
-//wire signed [F_int-1:0]OFvalue= {1'b0,{(F_int-1){1'b1}} };
-//wire signed [F_int-1:0]UFvalue={1'b1,{(F_int-1){1'b0}}};
 reg [WIO-1:0]C_I;
 reg [WFO-1:0]C_F;
 
@@ -116,12 +113,6 @@ always@(posedge clk) begin
        
      end
      underflow = |sum_F[F_Frac-WFO-1:0];
-     //type-1
-     //overflow = (( A_temp[(F_int+F_Frac)-1] && B_temp[(F_int+F_Frac)-1] && ~C[(F_int+F_Frac)-1]) ||
-     //            (~A_temp[(F_int+F_Frac)-1] && ~B_temp[(F_int+F_Frac)-1] && C[(F_int+F_Frac)-1]));
-     // type-2
-     //overflow =( (C[(F_int+F_Frac)-1:F_Frac] > OFvalue)&&(C[(WIO+WFO)-1] != 1'd1))? 1 : 0;
-     //underflow = ( (C[(F_int+F_Frac)-1:F_Frac] < UFvalue) &&(C[(WIO+WFO)-1] == 1'd1)) ? 1: 0;
      if(WIO>F_int)
         overflow=0;
      else if(sum[F_int+F_Frac]==0)
