@@ -45,8 +45,9 @@ int main()
 	h2p_virtual_base_A = mmap( NULL, 0x100, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0x80000000);
 	h2p_virtual_base_B = mmap( NULL, 0x100, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0x80000010);
 	h2p_virtual_base_sel = mmap( NULL, 0x100, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0x80000020);
-	
-	if( (h2p_virtual_base_A == MAP_FAILED)| (h2p_virtual_base_B == MAP_FAILED) | (h2p_virtual_base_sel == MAP_FAILED) ) {
+	h2p_virtual_base_C = mmap( NULL, 0x100, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0x80000030);
+	h2p_virtual_base_rem = mmap( NULL, 0x100, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0x80000040);
+	if( (h2p_virtual_base_A == MAP_FAILED)| (h2p_virtual_base_B == MAP_FAILED) | (h2p_virtual_base_sel == MAP_FAILED) | (h2p_virtual_base_C == MAP_FAILED) | (h2p_virtual_base_rem == MAP_FAILED)) {
 		printf( "ERROR: mmap1() failed...\n" );
 		close( fd );
 		return(1);
@@ -60,11 +61,11 @@ int main()
 	/*printf("Address stored in target ptr: %p\n", h2p_virtual_base);
 	printf("Value pointed to by ptr: %x\n", h2p_virtual_base[0]);*/
 	
-	printf("Address stored in target ptr: %p\n", h2p_virtual_base);
-	printf("Value pointed to by ptr: %x\n", h2p_virtual_base[0]);
+	printf("Address stored in target C ptr: %p\n", h2p_virtual_base_C);
+	printf("Value pointed to by C ptr: %x\n", h2p_virtual_base_C);
 
-	printf("Address stored in target ptr: %p\n", h2p_virtual_base);
-	printf("Value pointed to by ptr: %x\n", h2p_virtual_base[0]);
+	printf("Address stored in target rem ptr: %p\n", h2p_virtual_base_rem);
+	printf("Value pointed to by rem ptr: %x\n", h2p_virtual_base_rem);
 
 
 	return( 0 );
