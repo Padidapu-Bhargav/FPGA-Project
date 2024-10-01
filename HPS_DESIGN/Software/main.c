@@ -61,11 +61,11 @@ int main()
 	/*printf("Address stored in target ptr: %p\n", h2p_virtual_base);
 	printf("Value pointed to by ptr: %x\n", h2p_virtual_base[0]);*/
 	
-	printf("Address stored in target C ptr: %p\n", h2p_virtual_base_C);
-	printf("Value pointed to by C ptr: %x\n", h2p_virtual_base_C);
+	/*printf("Address stored in target C ptr: %p\n", h2p_virtual_base_C);
+	printf("Value pointed to by C ptr: %x\n", h2p_virtual_base_C[0]);
 
 	printf("Address stored in target rem ptr: %p\n", h2p_virtual_base_rem);
-	printf("Value pointed to by rem ptr: %x\n", h2p_virtual_base_rem);
+	printf("Value pointed to by rem ptr: %x\n", h2p_virtual_base_rem[0]);*/
 
 
 	return( 0 );
