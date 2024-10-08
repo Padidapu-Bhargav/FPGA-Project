@@ -1,32 +1,55 @@
-module arith_operations(
-    input [7:0]A,B,
+module arith_operations#(parameter Data_width_input= 8, 
+						 parameter Data_width_output= 16)(
+	 input clk,rst,							 
+    input [Data_width_input -1:0]A,B,
     input [1:0]sel,
-    output reg [15:0]C,
-    output reg [7:0]rem
+    output [Data_width_output-1:0]C,
+    output [Data_width_input-1 :0]rem
     );
+	 
+	 reg [Data_width_input -1:0]A_temp=0;
+	 reg [Data_width_input -1:0]B_temp=0;
+    reg [1:0]sel_temp=0;
+    reg [Data_width_output-1:0]C_temp=0;
+    reg [Data_width_input-1 :0]rem_temp=0;
     
-    always@(*) begin
-        case(sel)
+    always@(posedge clk) begin
+        if(~rst) begin
+            A_temp <= 'd0;
+			B_temp <= 'd0;
+			sel_temp <= 'd0;
+            C_temp <= 'd0;
+            rem_temp <= 'd0;
+        end
+        else begin
+            A_temp <= A;
+			B_temp <= B;
+			sel_temp <= sel;
+			
+            case(sel_temp)
             2'b00:begin
-                C <= A + B;
-                rem <= 'd0;
+                C_temp <= A_temp + B_temp;
+                rem_temp <= 'd0;
             end
             2'b01:begin
-                C <= A - B;
-                rem <= 'd0;
+                C_temp <= A_temp - B_temp;
+                rem_temp <= 'd0;
             end
             2'b10:begin
-                C <= A * B;
-                rem <= 'd0;
+                C_temp <= A_temp * B_temp;
+                rem_temp <= 'd0;
             end
             2'b11:begin
-                C <= A / B;
-                rem <= A % B ;
+                C_temp <= A_temp / B_temp;
+                rem_temp <= A % B ;
             end
             default : begin
-                C <= 'd0;
-                rem <= 'd0;
+                C_temp <= 'd0;
+                rem_temp <= 'd0;
             end
-        endcase
+            endcase
+        end 
     end
+    assign C = C_temp;
+    assign rem = rem_temp;
 endmodule
