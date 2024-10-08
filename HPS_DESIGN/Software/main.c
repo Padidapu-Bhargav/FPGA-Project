@@ -72,8 +72,6 @@ int main() {
 
     h2p_virtual_base_sel[0x20/4] = hexValue_sel;
 
-
-
     close(fd_A);
     return 0;
 }
