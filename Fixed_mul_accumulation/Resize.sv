@@ -7,54 +7,72 @@ module Resize#(parameter  WI1 = 5,           // integer part bitwidth for intege
                      ) (
                      input clk,
                      input reset,
-                     input signed [ (WI1+WF1)-1 :0]product,
-                     output reg signed [ (WIO+WFO)-1 :0]final_product
+                     input signed [ (WI1+WF1)-1 :0]Data,
+                     output signed [ (WIO+WFO)-1 :0]final_Data,
+                     output overflow
                );
     
 
 
 // temporary register for calculation of SUM
-reg [WI1-1:0]product_I;  // integer part of product
-reg [WF1-1:0]product_F;  // fractional part of product
-reg signed [(WIO+WFO)-1:0]product_temp; 
-reg [WIO-1:0]product_temp_I; // integer part of temporary product
-reg [WFO-1:0]product_temp_F; // fractional part of temporary product
-
+reg [WI1-1:0]Data_I;  // integer part of product
+reg [WF1-1:0]Data_F;  // fractional part of product
+reg signed [(WIO+WFO)-1:0]Data_temp; 
+reg [WIO-1:0]Data_temp_I; // integer part of temporary product
+reg [WFO-1:0]Data_temp_F; // fractional part of temporary product
+reg OF;
 
 
 ///////////////////////////
 //integer and fractional parts are separated and stored
 ///////////////////////////    
 always @(*) begin
-  product_I = product[(WI1+WF1-1):WF1];
-  product_F = product[(WF1-1):0];
+  Data_I = Data[(WI1+WF1-1):WF1];
+  Data_F = Data[(WF1-1):0];
+end
+
+// overflow condition
+always@(*) begin
+   if(reset) OF <= 0;
+   else begin
+       if(WIO>WI1) OF <=0;
+       else if(Data[WI1+WF1-1]==0)
+           OF <=|Data[WI1+WF1-1: WF1+WIO-1];
+       else if(Data[WI1+WF1-1]==1)
+           OF <=(~(&Data[WI1+WF1-1: WF1+WIO-1]));
+       else
+           OF <=0;
+   end    
 end
 
 always @(*) begin
   if (WI1 > WIO) begin                                 
-    product_temp_I = product_I[ WI1-WIO-1 :0];
+    Data_temp_I = {Data_I[WI1-1],Data_I[ WIO-1 :0]};
   end
   else begin
-    product_temp_I = { {(WIO-WI1) {product_I[WI1-1]} },product_I};
+    Data_temp_I = { {(WIO-WI1) {Data_I[WI1-1]} },Data_I};
   end
 end
 
 always @(*) begin
   if (WF1 > WFO) begin
-    product_temp_F = product_F[WF1-1:WF1-WFO];
+    Data_temp_F = Data_F[WF1-1:WF1-WFO];
   end
   else begin
-    product_temp_F = {product_F,{(WFO-WF1){1'b0}}};
+    Data_temp_F = {Data_F,{(WFO-WF1){1'b0}}};
   end
  end
-
+ 
 always @(*) begin
 	 if(reset) begin
-         final_product = 'd0;
+        Data_temp = 'd0;
 	 end
 	 else begin
-           final_product = {product_temp_I,product_temp_F};
+	    Data_temp = {Data_temp_I,Data_temp_F};
      end
 end
+
+assign final_Data = Data_temp;
+assign overflow = OF;
 
 endmodule
