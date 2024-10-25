@@ -7,9 +7,9 @@ parameter  WF2 = 8;           // fractional part bitwidth for integer
 parameter WIO = 7;
 parameter WFO = 13;
 
-localparam num_a = 35;
-localparam num_b = 35;
-localparam num_out = 50;
+localparam num_a = 10;
+localparam num_b = 10;
+localparam num_out = 20;
 
 localparam num_final = (num_a >= num_b) ? num_a : num_b ;
 
@@ -77,17 +77,21 @@ initial begin
     B_last = 'd0;
     out_ready = 'd0;
     OF_saturation = 'd1;
-    UF_saturation = 'd0;
+    UF_saturation = 'd1;
     
-    /* //CASE-1
+     //CASE-1
     repeat(3)@(negedge clk);
     fork
-          A_channel( a_num, 16'h1234, 0, 5);
-          B_channel( b_num, 12'h467, 1, 7);
-          outready ( out_num);
+        B_channel( b_num, 12'h467, 1, 15);
+        begin
+            A_channel( a_num, 16'h1234, 1, 20);
+            repeat(3)@(negedge clk);
+            A_channel( a_num, 16'h1234, 1, 8);
+        end
+        outready ( out_num);
     join
     A_data = 16'h0400;
-    B_data = 12'h0100;*/
+    B_data = 12'h0100;
     
     /* //CASE-2
     repeat(10)@(negedge clk);
@@ -99,18 +103,22 @@ initial begin
     A_data = 16'h0800;
     B_data = 12'h0200; */
     
-     //CASE-3
-    repeat(10)@(negedge clk);
+    /* //CASE-3
+    repeat(3)@(negedge clk);
     fork
-        A_channel( a_num, 16'h1234, 1, 5);
-        B_channel( b_num, 12'h467, 1, 7);
+        B_channel( b_num, 12'h467, 1, 8);
+        begin
+            A_channel( a_num, 16'h1234, 1, 5);
+            repeat(9)@(negedge clk);
+            A_channel( a_num, 16'h1234, 1, 5);
+        end
         outready ( out_num);
     join 
     //A_data = 16'h0c00;
     //B_data = 12'h0400;
     //OF_saturation = 'd1;
     //  UF_saturation = 'd1;
-    /*repeat(2) @(negedge clk);
+    repeat(2) @(negedge clk);
     fork
         A_channel( a_num, 16'h1234, 1,5);
         B_channel( b_num, 12'h467, 1,6);
@@ -122,23 +130,6 @@ initial begin
     join */ 
         
 end 
-
-// Output ready signal
-/*initial begin
-   out_ready = 0;
-    repeat(18)@(posedge clk);
-    out_ready = 1;
-    repeat(3)@(posedge clk);
-    out_ready = 0;
-    repeat(12)@(posedge clk);
-    out_ready = 1;
-    repeat(2)@(posedge clk);
-    out_ready = 0;
-    repeat(12)@(posedge clk);
-    out_ready = 1;     
-    repeat(2)@(posedge clk);
-    out_ready = 0;           
-end*/
 
 // tasks
 
@@ -177,31 +168,36 @@ task A_channel(input integer Num_cycles, input signed [WI1+WF1-1:0]Data,
     integer i;
     
     begin
-        A_data = Data ;
-        A_valid = 'd1;
-        
-        for (i = 1; i < Num_cycles; i = i + 1) begin
+         A_valid = 'd1;
+         A_data = Data ;
+         for (i = 1; i < Num_cycles; i = i + 1) begin
+         //$display("A : %0d",i);
                 #20;
-                if(A_last| B_last) i = Num_cycles;
-                //i = (A_last| B_last ) ? Num_cycles : 'd0;
                 while(!A_ready)begin
                     #20;
                 end
+                /*@(negedge clk) if(~A_valid && ~B_valid) begin
+                    Num_cycles = Num_cycles -i;
+                    #20;
+                    i =0;
+                    end*/
                 if (is_random) begin
-                    A_data = (A_ready)? ((A_valid)?$random:A_data) : A_data;
+                    //A_data = (A_ready)? ((A_valid)?$random:A_data) : A_data;
+                    A_data = (A_valid)?$random:A_data;
                     if( i % (throttle) == 0) A_valid =~A_valid;
                     else A_valid = A_valid;
                 end
                 else begin
-                    if( i % (throttle) == 0) A_valid =(A_ready)? ~A_valid: A_valid;
+                    //if( i % (throttle) == 0) A_valid =(A_ready)? ~A_valid: A_valid;
+                    if( i % (throttle) == 0) A_valid =~A_valid;
                     else A_valid = A_valid;
                 end
             end
         A_last = 1'd1;
         #20;
         A_last = 1'd0;
-        A_data = 'd0;
-        A_valid = 1'd0;
+        A_data <= 'd0;
+        A_valid = 'd0;
     end
 endtask
 
@@ -210,23 +206,22 @@ task B_channel(input integer Num_cycles, input signed [WI1+WF1-1:0]Data,
                input is_random, input integer throttle);
     integer i;
     begin
-        
-        B_data = Data ;
         B_valid = 'd1;
-        for (i = 1; i < Num_cycles; i = i + 1) begin            
+        B_data = Data ;
+        
+        for (i = 1; i < Num_cycles; i = i + 1) begin  
+        //$display("B = %0d",i);          
             #20;
-            if(A_last| B_last) i = Num_cycles;
-            //i = (A_last| B_last ) ? Num_cycles : 'd0;
             while(!B_ready)begin
                 #20;
             end
             if (is_random) begin
-                B_data =(B_ready)? ((B_valid)?$random:B_data) : B_data;
+                B_data = (B_valid)?$random:B_data;
                 if( i % (throttle) == 0) B_valid =~B_valid;
                 else B_valid = B_valid;
             end
             else begin
-                if( i % (throttle) == 0) B_valid =(B_ready)? ~B_valid: B_valid;
+                if( i % (throttle) == 0) B_valid =~B_valid ;
                 else B_valid = B_valid;
             end
         end
