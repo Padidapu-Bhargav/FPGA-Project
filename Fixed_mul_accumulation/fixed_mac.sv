@@ -14,15 +14,15 @@ module fixed_mac
                      //A channel
                      input signed [ (WI1+WF1)-1 :0]A_data,
                      input A_valid,
-                     output reg A_ready,
+                     output A_ready,
                      input A_last,
                      
                      //B channel
                      input signed [ (WI2+WF2)-1 :0]B_data,
                      input B_valid,
-                     output reg B_ready,
+                     output  B_ready,
                      input B_last,
-                     
+                   
                      //out channel
                      output signed [ (WIO + WFO)-1 :0]out_data,
                      output out_valid,
@@ -31,7 +31,7 @@ module fixed_mac
                      
                      input OF_saturation,
                      output overflow,
-                     
+                   
                      input UF_saturation,
                      output underflow                                         
                );
@@ -39,18 +39,18 @@ module fixed_mac
 localparam F_int =  WI1+WI2 ;
 // The final product Fraction length is taken as the sum of both Fraction parts 
 localparam F_Frac =  WF1+WF2 ; 
-
 //declare states
 reg [1:0]current_state,next_state;
 localparam IDLE=2'd0, MUL=2'd1,OUT=2'd2;
 
-// temporary registers to store the data if there is a valid
-reg signed [ (WI1+WF1)-1 :0]A;
-reg signed [ (WI2+WF2)-1 :0]B;
+// temporary registers to store the data,valid, ready if there is a valid
+reg signed [ (WI1+WF1)-1 :0]A_reg;
+reg signed [ (WI2+WF2)-1 :0]B_reg;
+reg A_valid_reg,B_valid_reg,A_ready_reg,B_ready_reg,last_reg;
+reg signed [ (WIO + WFO)-1 :0]out_data_reg;
 
-reg valid,ready,last;
+reg valid, ready, last;
 reg signed [F_int+F_Frac-1:0]product;
-reg signed [F_int+F_Frac-1:0]product_temp;
 reg signed [F_int+F_Frac+Extra-1:0]Data; // temporary out data
 reg signed [F_int+F_Frac+Extra-1:0]accumulate; // final sum
 reg OF;
@@ -61,21 +61,59 @@ Resize #(
     .WF1(F_Frac),
     .WIO(WIO),
     .WFO(WFO))
-    DUT_resize(.clk(clk),.reset(reset),.Data(Data),.final_Data(out_data),
+    DUT_resize(.clk(clk),.reset(reset),.input_Data(Data),.final_Data(out_data_reg),
                .OF_saturation(OF_saturation), .overflow(OF),
                .UF_saturation(UF_saturation), .underflow(UF) ); 
 
-// registering the A_data and B_data for a proper transaction
-always@(posedge clk) begin 
-    if(reset)begin
-        A <= 'b0;
-        B <= 'b0;
-    end
-    else begin
-        A <= (A_valid && A_ready ) ? A_data : A;
-        B <= (B_valid && B_ready ) ? B_data : B;
-    end
-end
+assign out_data = out_data_reg;
+
+
+// registering the A_data, B_data, A_valid, B_valid, last signal   
+always@(posedge clk) begin                                                   
+    if(reset)begin                                                 
+        A_reg <= 'b0;                                              
+        B_reg <= 'b0;                                              
+        A_valid_reg <= 'b0;                                        
+        B_valid_reg <= 'b0;
+        last <= 'd0;                                        
+        last_reg <= 'd0;                                               
+    end                                                            
+    else begin                                                     
+        A_reg <= (A_valid && ready ) ? A_data : A_reg;   
+        B_reg <= (B_valid && ready ) ? B_data : B_reg; 
+        A_valid_reg <= A_valid;                                    
+        B_valid_reg <= B_valid; 
+        last <= A_last | B_last;                                   
+        last_reg <= last;                                    
+    end                                                            
+end                                                                
+
+
+
+ always@(posedge clk) begin                                           
+    if(reset) begin                                          
+        A_ready_reg <= 'd0;                                   
+        B_ready_reg <= 'd0;                                   
+        ready <= 'd0;                                         
+    end                                                      
+    else begin                                                    
+        case(current_state)                                  
+            MUL:begin                                        
+                   ready <= 'd1;                              
+                   B_ready_reg <= ready & A_valid;        
+                   A_ready_reg <= ready & B_valid;        
+                end                                          
+            default: begin                                   
+                        ready <= 'd0;                         
+                        A_ready_reg <= 'd0;                   
+                        B_ready_reg <= 'd0;                   
+                     end                                     
+        endcase                                              
+    end                                                      
+end                                                 
+
+assign A_ready = A_ready_reg;
+assign B_ready = B_ready_reg;
 
 //current state logic
 always@(posedge clk) begin
@@ -87,25 +125,23 @@ end
 always@(*)begin
        case(current_state)
             IDLE:       begin
-                        if(~reset) next_state <= MUL ;
-                        else next_state <= IDLE;
+                            if(reset) next_state <= IDLE ;
+                            else next_state <= MUL;
                         end
             
             MUL:        begin
-                        if(last ) begin
-                            next_state <= OUT;
-                            end
-                        else begin
-                            if(reset) next_state <= IDLE;
-                            else next_state <= MUL;
+                            if(last_reg ) begin
+                                next_state <= OUT;
+                                end
+                            else begin
+                                next_state <= MUL;
                             end
                         end
             
                                     
             OUT:        begin  
                             if(out_ready) begin
-                                if(reset) next_state <= IDLE;
-                                else if(last) next_state <= OUT;
+                                if(last_reg) next_state <= OUT;
                                 else next_state <= MUL;
                             end 
                             else begin
@@ -119,48 +155,18 @@ always@(*)begin
         endcase
 end
 
-// registerning the last signal
-always@(posedge clk) begin
-    if(reset) begin
-        last <= 'd0;
-    end
-    else begin
-        last <= A_last | B_last;
-    end
 
-end
 
 always@(*) begin
     if(reset) begin
 		valid <= 'd0;
-        product_temp <= 'd0;
     end
     else begin 
-        valid <= A_valid & B_valid; 
-        product_temp <=(out_ready)? 'd0 :((last) ? product : product_temp);
+        valid <= A_valid_reg & B_valid_reg;
     end
 end
-    
-always@(*) begin
-    if(reset) begin
-        A_ready <= 'd0;
-        B_ready <= 'd0;
-        ready <= 'd0;
-    end
-    else begin
-    
-        case(current_state) 
-            MUL:begin
-                   ready <= 'd1;
-                   B_ready <= ready & A_valid;
-                   A_ready <= ready & B_valid;
-                end
-            default: begin
-                        ready <= 'd0;
-                     end
-        endcase
-    end
-end
+
+
 
 always@(posedge clk) begin
     if(reset) begin
@@ -170,27 +176,31 @@ always@(posedge clk) begin
     end
     else begin
          case(next_state)
-            IDLE:begin
+           IDLE:begin
                      accumulate <= 'd0;
                      product <= 'd0;
                  end
             MUL: begin
                     if(valid && ready) begin
-                        product <= A * B;
+                        product <= A_reg * B_reg;
                         accumulate <= accumulate + product; 
                     end
                     else begin
                         product <= product;
-                        accumulate <= accumulate;
                     end
                  end
-           
+          
             OUT :   begin
                     product <= 'd0;
-                    Data <= accumulate+product_temp;
-                    //Data <= (out_ready) ? 'd0 :accumulate+product_temp;
+                    Data <= accumulate;
                     accumulate <= (out_ready) ? 'd0 :accumulate; 
                     end
+                    
+             default : begin
+                        product <= 'd0;
+                        Data <= 'd0;
+                        accumulate <= 'd0;
+                       end
         endcase
     end
 end
@@ -200,4 +210,5 @@ assign overflow = OF;
 assign underflow = UF;
 assign out_last = (out_ready && out_valid) ? ((current_state == OUT)? 'd1: 'd0): 'd0;
 
-endmodule
+endmodule  
+
