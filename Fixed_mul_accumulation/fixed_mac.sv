@@ -75,7 +75,7 @@ always@(posedge clk) begin
         B_reg <= 'b0;                                              
         A_valid_reg <= 'b0;                                        
         B_valid_reg <= 'b0;
-        last <= 'd0;                                        
+        last <= 'd0;                                     
         last_reg <= 'd0;                                               
     end                                                            
     else begin                                                     
@@ -83,7 +83,7 @@ always@(posedge clk) begin
         B_reg <= (B_valid && ready ) ? B_data : B_reg; 
         A_valid_reg <= A_valid;                                    
         B_valid_reg <= B_valid; 
-        last <= A_last | B_last;                                   
+        last <= A_last | B_last;                           
         last_reg <= last;                                    
     end                                                            
 end                                                                
@@ -191,9 +191,11 @@ always@(posedge clk) begin
                  end
           
             OUT :   begin
-                    product <= 'd0;
-                    Data <= accumulate;
-                    accumulate <= (out_ready) ? 'd0 :accumulate; 
+                    product <= (out_ready && out_valid)? 'd0: product;
+                    //Data <= (out_ready && out_valid) ? 'd0: accumulate + product ;
+                    //Data <= (out_last) ? 'd0: accumulate + product ;
+                    Data <= accumulate + product ;
+                    accumulate <=(out_ready  && out_valid) ? 'd0 :accumulate;
                     end
                     
              default : begin
