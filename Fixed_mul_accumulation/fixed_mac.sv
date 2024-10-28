@@ -175,7 +175,7 @@ always@(posedge clk) begin
 		accumulate <= 'd0;
     end
     else begin
-         case(next_state)
+	    case(current_state)
            IDLE:begin
                      accumulate <= 'd0;
                      product <= 'd0;
