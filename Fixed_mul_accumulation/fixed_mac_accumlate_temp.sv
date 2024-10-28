@@ -1,3 +1,5 @@
+// fixed_mac module, registering the product for reducing the slack
+
 
 module fixed_mac
 #(parameter  WI1 = 4,           // integer part bitwidth for integer 1  
@@ -54,7 +56,7 @@ reg signed [F_int+F_Frac-1:0]product;
 reg signed [F_int+F_Frac-1:0]product_temp;// registering the  product
 reg signed [F_int+F_Frac+Extra-1:0]Data; // temporary out data
 reg signed [F_int+F_Frac+Extra-1:0]accumulate; // final sum
-reg signed [F_int+F_Frac+Extra-1:0]accumulate_temp; // final sum
+reg signed [F_int+F_Frac+Extra-1:0]accumulate_temp;
 reg OF;
 reg UF;
 
@@ -178,11 +180,13 @@ always@(posedge clk) begin
         product_temp <= 'd0;
         Data <= 'd0;
 		accumulate <= 'd0;
+		accumulate_temp <= 'd0;
     end
     else begin
          case(current_state) 
            IDLE:begin
                      accumulate <= 'd0;
+                     accumulate_temp <= 'd0;
                      product <= 'd0;
                      product_temp <= 'd0;
                      A_reg <= 'd0;
@@ -192,10 +196,13 @@ always@(posedge clk) begin
             MUL: begin                                                     
                     A_reg <= (A_valid && ready ) ? A_data : A_reg;   
                     B_reg <= (B_valid && ready ) ? B_data : B_reg;
+                    accumulate_temp <= accumulate;
+                    product_temp <= product;
                     if(valid && ready) begin
                         product <= A_reg * B_reg;
-                        product_temp <= product;
+                        
                         accumulate <= accumulate + product_temp; 
+                        
                     end
                     else begin
                         product <= product;
@@ -210,8 +217,9 @@ always@(posedge clk) begin
                     product_temp <= (out_ready && out_valid)? 'd0: product_temp;
                     //Data <= (out_ready && out_valid) ? 'd0: accumulate + product ;
                     //Data <= (out_last) ? 'd0: accumulate + product ;
-                    Data <= accumulate + product_temp + product ;
+                    Data <= accumulate_temp + product_temp + product ;
                     accumulate <=(out_ready  && out_valid) ? 'd0 :accumulate;
+                    accumulate_temp <=(out_ready  && out_valid) ? 'd0 :accumulate_temp;
                     //$display("product = %h , accumulate = %h, Data = %h ", product, accumulate,Data); 
                     
                     end
@@ -231,4 +239,3 @@ assign underflow = UF;
 assign out_last = (out_ready && out_valid) ? ((current_state == OUT)? 'd1: 'd0): 'd0;
 
 endmodule  
-
