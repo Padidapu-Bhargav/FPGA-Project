@@ -143,10 +143,10 @@ begin
     integer i;
     @(posedge clk);
     for (i = 0; i < (2*Num_cycles); i = i + 1) begin
-                #20;
+                @posedge clk;
                out_ready = (i==Num_cycles-1) ? 1'd1 : 1'd0;
     end
-    #20;
+    @posedge clk;
     out_ready = 'd0;
 end
 endtask
@@ -176,10 +176,10 @@ task A_channel(input integer Num_cycles, input signed [WI1+WF1-1:0]Data,
          A_data = Data ;
          //#20;
          for (i = 1; i < (2*Num_cycles); i = i + 1) begin
-                #20;
+                @posedge clk;
                 $display("A = %0d, Num_cycles = %0d",i,Num_cycles);
                 while(!A_ready)begin
-                    #20;
+                    @posedge clk;
                     //i = i-1;
                 end
                 
@@ -216,9 +216,9 @@ task B_channel(input integer Num_cycles, input signed [WI1+WF1-1:0]Data,
         //#20;
         for (i = 1; i < (2*Num_cycles); i = i + 1) begin  
         $display("B = %0d, num = %0d",i,Num_cycles);          
-           #20; 
+           @posedge clk;
             while(!B_ready)begin
-                #20;
+                @posedge clk;
                 //i = i-1;
             end
             if(B_ready) begin
