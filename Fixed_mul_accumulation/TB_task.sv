@@ -7,10 +7,10 @@ parameter  WF2 = 8;           // fractional part bitwidth for integer
 parameter WIO = 7;
 parameter WFO = 13;
 
-localparam num_a = 10;
-localparam num_b = 10;
-localparam num_out = 20;
-
+localparam num_a = 30;
+localparam num_b = 30;
+localparam num_out = 100;
+  
 localparam num_final = (num_a >= num_b) ? num_a : num_b ;
 
 parameter Extra = $clog2(num_final);
@@ -80,15 +80,19 @@ initial begin
     UF_saturation = 'd1;
     
      //CASE-1
-    repeat(3)@(negedge clk);
+    repeat(3)@(posedge clk);
     fork
-        B_channel( b_num, 12'h467, 1, 15);
         begin
-            A_channel( a_num, 16'h1234, 1, 20);
-            repeat(3)@(negedge clk);
-            A_channel( a_num, 16'h1234, 1, 8);
+        B_channel( b_num, 12'h234, 1, 9);
         end
+        begin
+            A_channel( a_num, 16'h1234, 1, 7);
+            //repeat(5)@(negedge clk);
+            //A_channel( a_num, 16'h1234, 1, 5);
+        end
+        begin
         outready ( out_num);
+        end
     join
     A_data = 16'h0400;
     B_data = 12'h0100;
@@ -138,7 +142,7 @@ task outready(input integer Num_cycles);
 begin
     integer i;
     @(posedge clk);
-    for (i = 0; i < Num_cycles; i = i + 1) begin
+    for (i = 0; i < (2*Num_cycles); i = i + 1) begin
                 #20;
                out_ready = (i==Num_cycles-1) ? 1'd1 : 1'd0;
     end
@@ -170,31 +174,32 @@ task A_channel(input integer Num_cycles, input signed [WI1+WF1-1:0]Data,
     begin
          A_valid = 'd1;
          A_data = Data ;
-         for (i = 1; i < Num_cycles; i = i + 1) begin
-         //$display("A : %0d",i);
+         //#20;
+         for (i = 1; i < (2*Num_cycles); i = i + 1) begin
                 #20;
+                $display("A = %0d, Num_cycles = %0d",i,Num_cycles);
                 while(!A_ready)begin
                     #20;
+                    //i = i-1;
                 end
-                /*@(negedge clk) if(~A_valid && ~B_valid) begin
-                    Num_cycles = Num_cycles -i;
-                    #20;
-                    i =0;
-                    end*/
-                if (is_random) begin
-                    //A_data = (A_ready)? ((A_valid)?$random:A_data) : A_data;
-                    A_data = (A_valid)?$random:A_data;
-                    if( i % (throttle) == 0) A_valid =~A_valid;
-                    else A_valid = A_valid;
+                
+                if(A_ready)begin
+                   if (is_random) begin
+                        A_data = (A_valid)?$random:A_data;
+                        if( i % (throttle) == 0) A_valid =~A_valid;
+                        else A_valid = A_valid;
+                    end
+                    else begin
+                        if( i % (throttle) == 0) A_valid =~A_valid;
+                        else A_valid = A_valid;
+                    end
+                    A_last = ( i == (2*Num_cycles)-2) ? 1'd1 : 'd0 ;
+                    //#20; 
                 end
-                else begin
-                    //if( i % (throttle) == 0) A_valid =(A_ready)? ~A_valid: A_valid;
-                    if( i % (throttle) == 0) A_valid =~A_valid;
-                    else A_valid = A_valid;
-                end
+                
             end
-        A_last = 1'd1;
-        #20;
+            //A_last = 1'd1;
+        //#20;
         A_last = 1'd0;
         A_data <= 'd0;
         A_valid = 'd0;
@@ -208,25 +213,31 @@ task B_channel(input integer Num_cycles, input signed [WI1+WF1-1:0]Data,
     begin
         B_valid = 'd1;
         B_data = Data ;
-        
-        for (i = 1; i < Num_cycles; i = i + 1) begin  
-        //$display("B = %0d",i);          
-            #20;
+        //#20;
+        for (i = 1; i < (2*Num_cycles); i = i + 1) begin  
+        $display("B = %0d, num = %0d",i,Num_cycles);          
+           #20; 
             while(!B_ready)begin
                 #20;
+                //i = i-1;
             end
-            if (is_random) begin
-                B_data = (B_valid)?$random:B_data;
-                if( i % (throttle) == 0) B_valid =~B_valid;
-                else B_valid = B_valid;
+            if(B_ready) begin
+                if (is_random) begin
+                    B_data = (B_valid)?$random:B_data;
+                    if( i % (throttle) == 0) B_valid =~B_valid;
+                    else B_valid = B_valid;
+                end
+                else begin
+                    if( i % (throttle) == 0) B_valid =~B_valid ;
+                    else B_valid = B_valid;
+                end
+                B_last = ( i == (2*Num_cycles)-3) ? 1'd1 : 'd0 ;
+                //#20;
             end
-            else begin
-                if( i % (throttle) == 0) B_valid =~B_valid ;
-                else B_valid = B_valid;
-            end
+            
         end
-        B_last = 1'd1;
-        #20;
+       // B_last = 1'd1;
+        //#20;
         B_last = 1'd0;
         B_data = 'd0;
         B_valid = 1'd0;
