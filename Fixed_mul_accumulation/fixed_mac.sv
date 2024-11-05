@@ -1,4 +1,4 @@
-
+// fmax is 364 MHZ for 600 MHZ clk
 module fixed_mac
 #(parameter  WI1 = 4,           // integer part bitwidth for integer 1  
              WF1 = 8,          // fractional part bitwidth for integer 1
