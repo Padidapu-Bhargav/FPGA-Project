@@ -1,5 +1,4 @@
 // fixed_mac module, registering the product for reducing the slack
-// fmax is 750 MHZ for 600 MHZ
 
 
 module fixed_mac
@@ -97,11 +96,21 @@ end
 
 
  always@(*) begin                                   
-        case(current_state)                               
+        case(current_state)  
+            IDLE:begin                                        
+                   ready <= 'd0;                              
+                   B_ready<= 'd0;        
+                   A_ready <= 'd0;       
+                end 
             MUL:begin                                        
                    ready <= 'd1;                              
                    B_ready<= ready & A_valid;        
                    A_ready <= ready & B_valid;        
+                end                              
+            OUT:begin                                        
+                   ready <= 'd0;                              
+                   B_ready<= 'd0;        
+                   A_ready <= 'd0;        
                 end                                          
             default: begin                                   
                         ready <= 'd0;                         
